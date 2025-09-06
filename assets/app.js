@@ -18,6 +18,7 @@ function svg(pathD){
 // ---------- Build Left Ribbon ----------
 function buildLeftNav(){
   const left = qs('#nav-left');
+  if (!left) return;
   left.innerHTML = '';
   const items = ['Home','Courses','Classes','Online Content','Prices'];
   items.forEach((label, idx)=>{
@@ -26,10 +27,7 @@ function buildLeftNav(){
     a.href='#'; a.className='link' + (idx===0?' active':''); a.textContent = label;
     it.appendChild(a);
     const sm = document.createElement('div'); sm.className='submenu';
-    sm.innerHTML = `
-      <a href="#">Placeholder 1</a>
-      <a href="#">Placeholder 2</a>
-      <a href="#">Placeholder 3</a>`;
+    sm.innerHTML = `<a href="#">Placeholder 1</a><a href="#">Placeholder 2</a><a href="#">Placeholder 3</a>`;
     it.appendChild(sm);
     left.appendChild(it);
 
@@ -49,6 +47,7 @@ function buildLeftNav(){
 // ---------- Build Right Ribbon ----------
 function buildRightNav(){
   const right = qs('#nav-right');
+  if (!right) return;
   right.innerHTML = '';
 
   if(!isLoggedIn()){
@@ -104,8 +103,8 @@ function buildRightNav(){
 }
 
 // ---------- Modal helpers ----------
-function openModal(id){ const el=qs('#'+id); el.classList.add('open'); el.setAttribute('aria-hidden','false'); }
-function closeModal(id){ const el=qs('#'+id); el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+function openModal(id){ const el=document.getElementById(id); if(!el) return; el.classList.add('open'); el.setAttribute('aria-hidden','false'); }
+function closeModal(id){ const el=document.getElementById(id); if(!el) return; el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
 function closeAll(){ ['login-modal','signup-modal','profile-modal','logout-modal'].forEach(closeModal); }
 qsa('.backdrop .veil').forEach(v=> v.addEventListener('click', closeAll));
 document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAll(); closeClass(); }});
@@ -114,92 +113,100 @@ document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAll(); clos
 qsa('.showpass').forEach(btn=>{
   btn.addEventListener('click', ()=>{
     const id = btn.getAttribute('data-for');
-    const input = qs('#'+id);
+    const input = document.getElementById(id);
+    if (!input) return;
     input.type = input.type === 'password' ? 'text' : 'password';
   });
 });
 
 // ---------- Auth click-through ----------
-qs('#li-submit').onclick=()=>{
+document.getElementById('li-submit')?.addEventListener('click', ()=>{
   setLoggedIn(true);
-  const email = qs('#li-user').value || 'user@example.com';
+  const email = (document.getElementById('li-user')?.value || 'user@example.com');
   const name = email.split('@')[0];
   const u = getUser();
   setUser({ ...u, name: u.name || name.charAt(0).toUpperCase()+name.slice(1), email, subLevel: u.subLevel || 'Free' });
   closeModal('login-modal'); buildRightNav();
-};
-qs('#li-cancel').onclick=()=> closeModal('login-modal');
+});
+document.getElementById('li-cancel')?.addEventListener('click', ()=> closeModal('login-modal'));
 
-qs('#su-submit').onclick=()=>{
-  const first=qs('#su-first').value||'New';
-  const last =qs('#su-last').value ||'User';
-  const email=qs('#su-email').value||'user@example.com';
+document.getElementById('su-submit')?.addEventListener('click', ()=>{
+  const first=document.getElementById('su-first')?.value || 'New';
+  const last =document.getElementById('su-last')?.value  || 'User';
+  const email=document.getElementById('su-email')?.value || 'user@example.com';
   setLoggedIn(true); setUser({name:`${first} ${last}`.trim(), email, subLevel:'Free'});
   closeModal('signup-modal'); buildRightNav();
-};
-qs('#su-cancel').onclick=()=> closeModal('signup-modal');
+});
+document.getElementById('su-cancel')?.addEventListener('click', ()=> closeModal('signup-modal'));
 
-qs('#lo-yes').onclick=()=>{ setLoggedIn(false); setUser({}); closeModal('logout-modal'); buildRightNav(); };
-qs('#lo-no').onclick =()=> closeModal('logout-modal');
+document.getElementById('lo-yes')?.addEventListener('click', ()=>{ setLoggedIn(false); setUser({}); closeModal('logout-modal'); buildRightNav(); });
+document.getElementById('lo-no')?.addEventListener('click',  ()=> closeModal('logout-modal'));
 
 // ---------- Profile ----------
 function openProfile(){
   const u=getUser();
-  qs('#pr-name').value  = u.name  || '';
-  qs('#pr-email').value = u.email || '';
+  const n=document.getElementById('pr-name'); const e=document.getElementById('pr-email');
+  if(n) n.value = u.name||''; if(e) e.value = u.email||'';
   openModal('profile-modal');
 }
-qs('#pr-save').onclick=()=>{
+document.getElementById('pr-save')?.addEventListener('click', ()=>{
   const u=getUser();
-  u.name  = qs('#pr-name').value || u.name || 'User';
-  u.email = qs('#pr-email').value || u.email || '';
+  const n=document.getElementById('pr-name')?.value; const e=document.getElementById('pr-email')?.value;
+  if(n) u.name=n; if(e) u.email=e;
   setUser(u); closeModal('profile-modal'); buildRightNav();
-};
-qs('#pr-cancel').onclick=()=> closeModal('profile-modal');
-qs('#avatar-upload').addEventListener('change', e=>{
-  const f=e.target.files[0]; if(!f) return;
+});
+document.getElementById('pr-cancel')?.addEventListener('click', ()=> closeModal('profile-modal'));
+document.getElementById('avatar-upload')?.addEventListener('change', e=>{
+  const f=e.target.files?.[0]; if(!f) return;
   const r=new FileReader(); r.onload=ev=>{ const u=getUser(); u.avatar=ev.target.result; setUser(u); buildRightNav(); };
   r.readAsDataURL(f);
 });
 
 // ---------- Next Class (card + mini-player) ----------
-const classWrap = qs('#class-wrap');
-const hero      = qs('#class-video');
-const pip       = qs('#pip');
-const pipVid    = qs('#pip-video');
+const classWrap = document.getElementById('class-wrap');
+const hero      = document.getElementById('class-video');
+const pip       = document.getElementById('pip');
+const pipVid    = document.getElementById('pip-video');
 
-qs('#class-close').onclick = ()=> closeClass();
-qs('#to-full').onclick     = ()=> hero.requestFullscreen?.();
-qs('#to-pip').onclick      = ()=> openPip();
-qs('#pip-close').onclick   = ()=> pip.style.display='none';
-qs('#pip-back').onclick    = ()=>{ pip.style.display='none'; classWrap.classList.add('open'); };
+document.getElementById('class-close')?.addEventListener('click', ()=> closeClass());
+document.getElementById('to-full')?.addEventListener('click',  ()=> hero?.requestFullscreen?.());
+document.getElementById('to-pip')?.addEventListener('click',   ()=> openPip());
+document.getElementById('pip-close')?.addEventListener('click', ()=> { if(pip) pip.style.display='none'; });
+document.getElementById('pip-back')?.addEventListener('click',  ()=> { if(pip) pip.style.display='none'; if(classWrap) classWrap.classList.add('open'); });
 
-function openClass(){ classWrap.classList.add('open'); }
-function closeClass(){ classWrap.classList.remove('open'); }
-function openPip(){ pipVid.src=''; pipVid.removeAttribute('src'); pip.style.display='block'; classWrap.classList.remove('open'); }
+function openClass(){ classWrap?.classList.add('open'); }
+function closeClass(){ classWrap?.classList.remove('open'); }
+function openPip(){ if(pipVid){ pipVid.src=''; pipVid.removeAttribute('src'); } if(pip){ pip.style.display='block'; } closeClass(); }
 // Draggable PiP
 (function(){
-  const handle=qs('#pip-drag');
+  const handle=document.getElementById('pip-drag');
+  if(!handle || !pip) return;
   let ox=0, oy=0, drag=false;
   handle.addEventListener('mousedown',e=>{ drag=true; ox=e.clientX-pip.offsetLeft; oy=e.clientY-pip.offsetTop; e.preventDefault();});
   window.addEventListener('mousemove',e=>{ if(!drag) return; pip.style.left=(e.clientX-ox)+'px'; pip.style.top=(e.clientY-oy)+'px'; pip.style.right='auto'; pip.style.bottom='auto';});
   window.addEventListener('mouseup',()=> drag=false);
 })();
 
-// Enrolled avatars (demo data)
+// Enrolled avatars (demo)
 (function renderPeople(){
-  const stack=qs('#enrolled-stack'); const list=qs('#people-list');
+  const stack=document.getElementById('enrolled-stack'); const list=document.getElementById('people-list');
+  if(!stack || !list) return;
   const people=['Alex','Ben','Casey','Dana','Eli','Fran','Gus'];
   stack.innerHTML=''; list.innerHTML='';
   people.forEach(n=>{
     const a=document.createElement('div'); a.className='avatar'; a.textContent=n[0]; stack.appendChild(a);
     const row=document.createElement('div'); row.style.padding='6px 0'; row.textContent=n; list.appendChild(row);
   });
-  qs('#see-people').onclick=()=> list.classList.toggle('open');
+  document.getElementById('see-people')?.addEventListener('click', ()=> list.classList.toggle('open'));
 })();
 
-// ---------- Init after DOM is ready ----------
-document.addEventListener('DOMContentLoaded', ()=>{
+// ---------- INIT (robust) ----------
+function init(){
   buildLeftNav();
   buildRightNav();
-});
+}
+if (document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init, {once:true});
+} else {
+  init();
+}
