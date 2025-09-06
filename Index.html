@@ -4,31 +4,363 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Jody Graham — Homepage</title>
-<meta name="color-scheme" content="dark"> <!-- Force dark mode -->
+<meta name="color-scheme" content="dark" />
 <style>
+  :root{
+    color-scheme: dark;
+    --ink:#fff; --muted:#b8c0cc;
+    --blue:#0A84FF; --green:#32D74B; --red:#FF453A;
+    --stroke:rgba(255,255,255,.18);
+    --panel:rgba(0,0,0,.72);
+  }
   html, body {
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    overflow: hidden;          /* no scrolling */
-    background: #000;          /* dark fallback */
-    color-scheme: dark;        /* browsers render UI (inputs, scrollbars) dark */
+    margin:0; height:100%; overflow:hidden; background:#000; color:var(--ink);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,system-ui,sans-serif;
   }
-  body {
-    background: #000;          /* make sure it stays dark */
+
+  /* Fullscreen background image */
+  .fullscreen{
+    position:fixed; inset:0; width:100%; height:100%;
+    background:url("assets/hero-jody.jpg") center/cover no-repeat #000;
   }
-  .fullscreen {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    background: url("assets/hero-jody.jpg") no-repeat center center;
-    background-size: cover;    /* crop to fill */
-    background-color: #000;    /* if image takes a moment to load */
+
+  /* Top ribbon */
+  .ribbon{
+    position:fixed; top:0; left:0; right:0; height:56px; z-index:40;
+    background:rgba(0,0,0,.30); backdrop-filter:blur(8px);
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    padding:0 12px; border-bottom:1px solid var(--stroke);
   }
+  .r-left, .r-right{ display:flex; align-items:center; gap:16px; }
+  .r-left{ overflow:auto hidden; scrollbar-width:none; }
+  .r-left::-webkit-scrollbar{ display:none; }
+  .link{ color:#fff; text-decoration:none; opacity:.95; white-space:nowrap; }
+  .link.active{ color:var(--blue); font-weight:600; }
+
+  /* Pills (logged-out actions) */
+  .pill{
+    display:inline-block; padding:8px 12px; border-radius:999px;
+    border:1px solid var(--stroke); text-decoration:none; color:#fff; white-space:nowrap;
+    background:rgba(255,255,255,.08); cursor:pointer;
+  }
+  .pill.green{ background:rgba(50,215,75,.20); }
+  .pill.blue{  background:rgba(10,132,255,.20); }
+
+  /* Avatar bubble */
+  .avatar-wrap{ position:relative; }
+  .avatar-btn{
+    display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+    border:1px solid var(--stroke); background:rgba(255,255,255,.08); cursor:pointer;
+  }
+  .avatar-circle{
+    width:28px; height:28px; border-radius:50%;
+    background:rgba(255,255,255,.12); color:#fff; display:flex;
+    align-items:center; justify-content:center; font-weight:600; font-size:.9rem; overflow:hidden;
+  }
+  .avatar-circle img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .avatar-label{ white-space:nowrap; max-width:26ch; overflow:hidden; text-overflow:ellipsis; }
+
+  /* Account popover */
+  .account-pop{ position:absolute; top:44px; right:0; min-width:240px;
+    border:1px solid var(--stroke); border-radius:14px; background:var(--panel);
+    backdrop-filter:blur(10px); padding:8px; display:none; z-index:60; }
+  .account-pop.open{ display:block; }
+  .account-pop .item{ display:flex; align-items:center; gap:10px;
+    padding:10px 12px; border-radius:10px; color:#fff; text-decoration:none; cursor:pointer; }
+  .account-pop .item:hover{ background:rgba(255,255,255,.06); }
+  .account-pop .item.red{ color:#fff; background:rgba(255,69,58,.18); }
+  .account-pop .item .hint{ margin-left:auto; opacity:.8; font-size:.85em; }
+
+  /* Modals */
+  .modal-backdrop{ position:fixed; inset:0; display:none; z-index:70; }
+  .modal-backdrop.open{ display:block; }
+  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.45); }
+  .card{
+    position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+    width:min(92vw,380px); border:1px solid var(--stroke); border-radius:16px;
+    background:rgba(0,0,0,.30); backdrop-filter:blur(10px); padding:18px; color:#fff;
+  }
+  .card h2{ margin:0 0 8px; font-size:1.25rem; }
+  .field{ margin:10px 0 12px; }
+  .field label{ display:block; font-size:.9rem; color:var(--muted); margin:0 0 6px; }
+  .input{ width:100%; padding:12px; border-radius:12px; border:1px solid var(--stroke);
+          background:rgba(0,0,0,.35); color:#fff; }
+  .actions{ display:grid; gap:10px; margin-top:12px; }
+  .btn{ border-radius:12px; padding:12px 14px; border:1px solid var(--stroke); background:#111; color:#fff; cursor:pointer; }
+  .btn.primary{ background:var(--blue); border-color:transparent; }
+  .btn.success{ background:var(--green); border-color:transparent; }
+  .btn.danger{ background:var(--red); border-color:transparent; }
+  .btn.ghost{ background:rgba(255,255,255,.08); }
+  .center{ text-align:center; }
+  .muted{ color:var(--muted); }
 </style>
 </head>
 <body>
-  <div class="fullscreen"></div>
+  <div class="fullscreen" aria-hidden="true"></div>
+
+  <!-- Ribbon -->
+  <header class="ribbon" role="navigation" aria-label="Primary">
+    <div class="r-left">
+      <a href="#" class="link active">Home</a>
+      <a href="#" class="link">Placeholder 1</a>
+      <a href="#" class="link">Placeholder 2</a>
+      <a href="#" class="link">Placeholder 3</a>
+    </div>
+    <div class="r-right" id="r-right">
+      <!-- filled by JS (Login/Signup pills OR Avatar bubble) -->
+    </div>
+  </header>
+
+  <!-- Login Modal -->
+  <div class="modal-backdrop" id="login-modal"><div class="scrim"></div>
+    <div class="card"><h2>Sign in</h2>
+      <div class="field"><label>Email</label><input id="li-user" class="input" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="li-pass" type="password" class="input"></div>
+      <div class="actions"><button class="btn success" id="li-submit">Sign in</button><button class="btn ghost" id="li-cancel">Cancel</button></div>
+    </div>
+  </div>
+
+  <!-- Signup Modal -->
+  <div class="modal-backdrop" id="signup-modal"><div class="scrim"></div>
+    <div class="card"><h2>Create account</h2>
+      <div class="field"><label>Name</label><input id="su-name" class="input" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input id="su-email" type="email" class="input" placeholder="you@example.com"></div>
+      <div class="field"><label>Password</label><input id="su-pass" type="password" class="input"></div>
+      <div class="actions"><button class="btn primary" id="su-submit">Sign up</button><button class="btn ghost" id="su-cancel">Cancel</button></div>
+    </div>
+  </div>
+
+  <!-- Logout Modal -->
+  <div class="modal-backdrop" id="logout-modal"><div class="scrim"></div>
+    <div class="card center"><h2>Log out?</h2><p class="muted">Are you sure?</p>
+      <div class="actions"><button class="btn danger" id="lo-yes">Yes</button><button class="btn ghost" id="lo-no">No</button></div>
+    </div>
+  </div>
+
+  <!-- Profile Modal (includes avatar upload) -->
+  <div class="modal-backdrop" id="profile-modal"><div class="scrim"></div>
+    <div class="card"><h2>Your profile</h2>
+      <div class="field"><label>Name</label><input id="pr-name" class="input" placeholder="Your name"></div>
+      <div class="field"><label>Email</label><input id="pr-email" class="input" placeholder="you@example.com"></div>
+      <div class="field"><label>Avatar image</label><input type="file" id="avatar-upload" accept="image/*" class="input"></div>
+      <div class="actions"><button class="btn ghost" id="pr-close">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Subscription Modal (placeholder) -->
+  <div class="modal-backdrop" id="sub-modal"><div class="scrim"></div>
+    <div class="card"><h2>Subscription</h2>
+      <p class="muted">Level: <span id="sub-level">Free</span></p>
+      <div class="actions">
+        <button class="btn" data-level="Free">Free</button>
+        <button class="btn" data-level="Member">Member</button>
+        <button class="btn" data-level="Student">Student</button>
+      </div>
+      <div class="actions"><button class="btn ghost" id="sub-close">Close</button></div>
+    </div>
+  </div>
+
+  <!-- Enrolled Training Modal (placeholder) -->
+  <div class="modal-backdrop" id="train-modal"><div class="scrim"></div>
+    <div class="card"><h2>Enrolled training</h2>
+      <p class="muted">No active courses (placeholder).</p>
+      <div class="actions"><button class="btn ghost" id="train-close">Close</button></div>
+    </div>
+  </div>
+
+<script>
+  /* --------------------------
+     Fake auth + profile storage
+     -------------------------- */
+  const isLoggedIn = () => sessionStorage.getItem('AUTH')==='1';
+  const setLoggedIn = v => sessionStorage.setItem('AUTH', v?'1':'0');
+
+  const getUser = () => JSON.parse(localStorage.getItem('USER')||'{}');
+  const setUser = obj => localStorage.setItem('USER', JSON.stringify(obj));
+
+  /* --------------------------
+     Render ribbon right side
+     -------------------------- */
+  const right = document.getElementById('r-right');
+
+  function renderRight(){
+    right.innerHTML='';
+    if(isLoggedIn()){
+      const user = getUser();
+      // Avatar bubble (button)
+      const wrap = document.createElement('div');
+      wrap.className='avatar-wrap';
+      const btn = document.createElement('button');
+      btn.className='avatar-btn';
+      btn.setAttribute('aria-haspopup','true');
+      btn.setAttribute('aria-expanded','false');
+
+      const circle = document.createElement('div');
+      circle.className='avatar-circle';
+      if(user.avatar){
+        const img=document.createElement('img'); img.src=user.avatar; circle.appendChild(img);
+      }else{
+        circle.textContent = (user.name?.[0] || '?').toUpperCase();
+      }
+      const label=document.createElement('span');
+      label.className='avatar-label';
+      label.textContent = user.name || 'Profile';
+
+      btn.append(circle, label);
+      wrap.appendChild(btn);
+
+      // Popover menu
+      const pop=document.createElement('div');
+      pop.className='account-pop';
+      pop.innerHTML=`
+        <div class="item" data-action="profile">Profile</div>
+        <div class="item" data-action="subscription">Subscription <span class="hint" id="hint-sub">${user.subLevel||'Free'}</span></div>
+        <div class="item" data-action="training">Enrolled training</div>
+        <div class="item red" data-action="logout">Log out</div>
+      `;
+      wrap.appendChild(pop);
+      right.appendChild(wrap);
+
+      // Toggle popover
+      const togglePop = (open) => {
+        pop.classList.toggle('open', open);
+        btn.setAttribute('aria-expanded', String(open));
+      };
+      btn.addEventListener('click', (e)=>{
+        e.stopPropagation();
+        togglePop(!pop.classList.contains('open'));
+      });
+      document.addEventListener('click', (e)=>{
+        if(!e.target.closest('.account-pop') && !e.target.closest('.avatar-btn')){
+          togglePop(false);
+        }
+      });
+      document.addEventListener('keydown', e=>{ if(e.key==='Escape') togglePop(false); });
+
+      // Handle popover actions
+      pop.addEventListener('click', (e)=>{
+        const it = e.target.closest('.item');
+        if(!it) return;
+        const action = it.getAttribute('data-action');
+        togglePop(false);
+        if(action==='profile') openModal('profile-modal');
+        if(action==='subscription') openModal('sub-modal');
+        if(action==='training') openModal('train-modal');
+        if(action==='logout') openModal('logout-modal');
+      });
+
+    }else{
+      // Logged out pills
+      const login = document.createElement('a');
+      login.href='#'; login.className='pill green'; login.textContent='Login';
+      login.addEventListener('click', e=>{ e.preventDefault(); openModal('login-modal'); });
+      const signup = document.createElement('a');
+      signup.href='#'; signup.className='pill blue'; signup.textContent='Sign up';
+      signup.addEventListener('click', e=>{ e.preventDefault(); openModal('signup-modal'); });
+      right.append(login, signup);
+    }
+  }
+
+  /* --------------------------
+     Modal helpers
+     -------------------------- */
+  function openModal(id){ document.getElementById(id).classList.add('open'); }
+  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
+  function closeAll(){ ['login-modal','signup-modal','logout-modal','profile-modal','sub-modal','train-modal'].forEach(closeModal); }
+  document.querySelectorAll('.scrim').forEach(s=>s.addEventListener('click', closeAll));
+  document.addEventListener('keydown', e=>{ if(e.key==='Escape') closeAll(); });
+
+  /* --------------------------
+     Login / Signup / Logout
+     -------------------------- */
+  document.getElementById('li-submit').onclick=()=>{
+    setLoggedIn(true);
+    const u=getUser(); if(!u.name) setUser({...u, name:'User', subLevel:u.subLevel||'Free'});
+    closeModal('login-modal'); renderRight();
+  };
+  document.getElementById('li-cancel').onclick=()=>closeModal('login-modal');
+
+  document.getElementById('su-submit').onclick=()=>{
+    setLoggedIn(true);
+    const name = document.getElementById('su-name').value || 'User';
+    const email = document.getElementById('su-email').value || '';
+    setUser({name, email, subLevel:'Free'});
+    closeModal('signup-modal'); renderRight();
+  };
+  document.getElementById('su-cancel').onclick=()=>closeModal('signup-modal');
+
+  document.getElementById('lo-yes').onclick=()=>{
+    setLoggedIn(false); setUser({});
+    closeModal('logout-modal'); renderRight();
+  };
+  document.getElementById('lo-no').onclick=()=>closeModal('logout-modal');
+
+  /* --------------------------
+     Profile modal (name/email + avatar upload)
+     -------------------------- */
+  const prName  = document.getElementById('pr-name');
+  const prEmail = document.getElementById('pr-email');
+  document.getElementById('profile-modal').addEventListener('transitionstart', ()=>{}); // placeholder
+
+  // Populate when opening
+  document.getElementById('profile-modal').addEventListener('click', ()=>{ /* keep open */ });
+  function populateProfile(){
+    const u=getUser();
+    prName.value = u.name || '';
+    prEmail.value = u.email || '';
+  }
+  // Hook open
+  const _openProfile = openModal;
+  openModal = (id => (which)=>{ 
+    if(which==='profile-modal') populateProfile();
+    _openProfile(which);
+  })(openModal);
+
+  document.getElementById('pr-close').onclick=()=>{
+    const u=getUser();
+    u.name = prName.value || u.name || 'User';
+    u.email = prEmail.value || u.email || '';
+    setUser(u);
+    closeModal('profile-modal'); renderRight();
+  };
+
+  // Avatar upload
+  document.getElementById('avatar-upload').addEventListener('change', e=>{
+    const file = e.target.files[0];
+    if(file){
+      const reader = new FileReader();
+      reader.onload = ev => {
+        const u=getUser(); u.avatar = ev.target.result; setUser(u); renderRight();
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  /* --------------------------
+     Subscription modal (placeholder)
+     -------------------------- */
+  const subModal = document.getElementById('sub-modal');
+  const subLevelSpan = document.getElementById('sub-level');
+  function openSub(){
+    const u=getUser(); subLevelSpan.textContent = u.subLevel || 'Free';
+    openModal('sub-modal');
+  }
+  // Wire open when popover selects "Subscription" (handled above)
+  subModal.querySelectorAll('button[data-level]').forEach(b=>{
+    b.addEventListener('click', ()=>{
+      const level=b.getAttribute('data-level');
+      const u=getUser(); u.subLevel = level; setUser(u);
+      document.getElementById('hint-sub').textContent = level;
+      subLevelSpan.textContent = level;
+    });
+  });
+  document.getElementById('sub-close').onclick=()=>closeModal('sub-modal');
+
+  // Training modal close
+  document.getElementById('train-close').onclick=()=>closeModal('train-modal');
+
+  // Init
+  renderRight();
+</script>
 </body>
 </html>
