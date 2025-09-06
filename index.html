@@ -8,199 +8,415 @@
 <style>
   :root{
     color-scheme: dark;
-    --ink:#fff; --muted:#b8c0cc;
+    --ink:#fff; --muted:#b8c0cc; --stroke:rgba(255,255,255,.18);
+    --panel:rgba(0,0,0,.72); --veil:rgba(0,0,0,.45);
     --blue:#0A84FF; --green:#32D74B; --red:#FF453A;
-    --stroke:rgba(255,255,255,.18);
-    --panel:rgba(0,0,0,.72);
   }
-  html, body {
-    margin:0; height:100%; overflow:hidden; background:#000; color:var(--ink);
-    font:16px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,system-ui,sans-serif;
-  }
+  html,body{margin:0;height:100%;overflow:hidden;background:#000;color:var(--ink);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,system-ui,sans-serif;}
 
-  /* Fullscreen background image */
-  .fullscreen{
-    position:fixed; inset:0; width:100%; height:100%;
-    background:url("assets/hero-jody.jpg") center/cover no-repeat #000;
-  }
+  /* Background image */
+  .bg{position:fixed;inset:0;background:url("assets/hero-jody.jpg") center/cover no-repeat #000;}
 
-  /* Top ribbon */
-  .ribbon{
-    position:fixed; top:0; left:0; right:0; height:56px; z-index:40;
-    background:rgba(0,0,0,.30); backdrop-filter:blur(8px);
-    display:flex; align-items:center; justify-content:space-between; gap:12px;
-    padding:0 12px; border-bottom:1px solid var(--stroke);
-  }
-  .r-left, .r-right{ display:flex; align-items:center; gap:16px; }
-  .link{ color:#fff; text-decoration:none; opacity:.95; white-space:nowrap; }
-  .link.active{ color:var(--blue); font-weight:600; }
+  /* Ribbon */
+  .ribbon{position:fixed;top:0;left:0;right:0;height:56px;z-index:40;
+    background:rgba(0,0,0,.30);backdrop-filter:blur(10px);
+    border-bottom:1px solid var(--stroke);display:grid;align-items:center;
+    grid-template-columns:1fr auto 1fr;padding:0 12px;}
+  .brand-gap{justify-self:center;}
+  .nav{display:flex;gap:22px;justify-content:space-evenly;align-items:center;}
+  .nav.right{justify-content:flex-end;gap:16px}
+  .nav a,.nav button{appearance:none;border:0;background:none;color:#fff;text-decoration:none;cursor:pointer}
+  .nav .link{white-space:nowrap;opacity:.95}
+  .nav .link.active{color:var(--blue);font-weight:600}
 
-  /* Pills */
-  .pill{
-    display:inline-block; padding:8px 12px; border-radius:999px;
-    border:1px solid var(--stroke); text-decoration:none; color:#fff; white-space:nowrap;
-    background:rgba(255,255,255,.08); cursor:pointer;
-  }
-  .pill.green{ background:rgba(50,215,75,.20); }
-  .pill.blue{  background:rgba(10,132,255,.20); }
+  /* Submenus (3 placeholders each) */
+  .nav-item{position:relative}
+  .submenu{position:absolute;top:100%;left:0;min-width:200px;display:none;
+    background:var(--panel);backdrop-filter:blur(10px);border:1px solid var(--stroke);
+    border-radius:12px;padding:8px;z-index:55}
+  .submenu a{display:block;padding:8px 10px;border-radius:8px;color:#fff;text-decoration:none}
+  .submenu a:hover{background:rgba(255,255,255,.08)}
+  .nav-item.open>.submenu{display:block}
+  @media (hover:hover){ .nav-item:hover>.submenu{display:block} }
 
-  /* Avatar bubble + popover */
-  .avatar-wrap{ position:relative; }
-  .avatar-btn{ display:flex; align-items:center; gap:8px; padding:6px 10px;
-               border-radius:999px; border:1px solid var(--stroke);
-               background:rgba(255,255,255,.08); cursor:pointer; }
-  .avatar-circle{ width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.12);
-                  color:#fff; display:flex; align-items:center; justify-content:center;
-                  font-weight:600; font-size:.9rem; overflow:hidden; }
-  .avatar-circle img{ width:100%; height:100%; object-fit:cover; display:block; }
-  .avatar-label{ white-space:nowrap; max-width:20ch; overflow:hidden; text-overflow:ellipsis; }
+  /* Pills (logged-out right side) */
+  .pill{padding:8px 12px;border-radius:999px;background:rgba(255,255,255,.08);border:1px solid var(--stroke)}
+  .pill.green{background:rgba(50,215,75,.20)}
+  .pill.blue{background:rgba(10,132,255,.20)}
 
-  .account-pop{ position:absolute; top:44px; right:0; min-width:240px;
-    border:1px solid var(--stroke); border-radius:14px; background:var(--panel);
-    backdrop-filter:blur(10px); padding:8px; display:none; z-index:60; }
-  .account-pop.open{ display:block; }
-  .account-pop .item{ padding:10px 12px; border-radius:10px; cursor:pointer; }
-  .account-pop .item:hover{ background:rgba(255,255,255,.06); }
-  .account-pop .item.red{ color:#fff; background:rgba(255,69,58,.18); }
-  .account-pop .item .hint{ float:right; opacity:.8; font-size:.85em; }
+  /* iOS-like avatar chip (no outline) */
+  .chip{display:flex;align-items:center;gap:8px;padding:6px 10px;border-radius:999px;
+    background:rgba(255,255,255,.10);backdrop-filter:blur(6px)}
+  .avatar{width:28px;height:28px;border-radius:50%;overflow:hidden;display:grid;place-items:center;background:rgba(255,255,255,.15);font-weight:700}
+  .avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .name{font-weight:600;color:var(--blue);white-space:nowrap}
 
-  /* Modals */
-  .modal-backdrop{ position:fixed; inset:0; display:none; z-index:70; }
-  .modal-backdrop.open{ display:block; }
-  .scrim{ position:absolute; inset:0; background:rgba(0,0,0,.45); }
-  .card{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
-         width:min(92vw,380px); border:1px solid var(--stroke); border-radius:16px;
-         background:rgba(0,0,0,.30); backdrop-filter:blur(10px); padding:18px; color:#fff; }
-  .card h2{ margin:0 0 8px; font-size:1.25rem; }
-  .field{ margin:10px 0 12px; }
-  .field label{ display:block; font-size:.9rem; color:var(--muted); margin:0 0 6px; }
-  .input{ width:100%; padding:12px; border-radius:12px; border:1px solid var(--stroke);
-          background:rgba(0,0,0,.35); color:#fff; }
-  .actions{ display:grid; gap:10px; margin-top:12px; }
-  .btn{ border-radius:12px; padding:12px 14px; border:1px solid var(--stroke); background:#111; color:#fff; cursor:pointer; }
-  .btn.primary{ background:var(--blue); border-color:transparent; }
-  .btn.success{ background:var(--green); border-color:transparent; }
-  .btn.danger{ background:var(--red); border-color:transparent; }
-  .btn.ghost{ background:rgba(255,255,255,.08); }
-  .center{ text-align:center; }
+  /* Small icon button */
+  .iconbtn{width:36px;height:36px;border-radius:10px;background:rgba(255,255,255,.08);
+    border:1px solid var(--stroke);display:grid;place-items:center}
+  .icon{width:18px;height:18px;display:block;fill:#fff;opacity:.95}
+
+  /* Popover under avatar */
+  .account-pop{position:absolute;top:44px;right:0;min-width:240px;display:none;
+    background:var(--panel);border:1px solid var(--stroke);border-radius:14px;padding:8px;z-index:60}
+  .account-pop.open{display:block}
+  .account-pop .item{padding:10px 12px;border-radius:10px;cursor:pointer}
+  .account-pop .item:hover{background:rgba(255,255,255,.08)}
+  .account-pop .item.red{background:rgba(255,69,58,.18)}
+  .account-pop .hint{float:right;opacity:.8;font-size:.85em}
+
+  /* Modal base */
+  .backdrop{position:fixed;inset:0;display:none;z-index:70}
+  .backdrop.open{display:block}
+  .veil{position:absolute;inset:0;background:var(--veil)}
+  .card{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+    width:min(92vw,440px);background:rgba(0,0,0,.30);border:1px solid var(--stroke);
+    border-radius:16px;backdrop-filter:blur(10px);padding:18px}
+  .card h2{margin:0 0 10px}
+  .field{margin:10px 0 12px}
+  .label{display:block;font-size:.9rem;color:var(--muted);margin:0 0 6px}
+  .inputwrap{position:relative}
+  .input{width:100%;padding:12px 44px 12px 12px;border-radius:12px;border:1px solid var(--stroke);
+    background:rgba(0,0,0,.35);color:#fff}
+  .showpass{position:absolute;right:6px;top:6px;width:32px;height:32px;border-radius:8px;
+    background:rgba(255,255,255,.08);border:1px solid var(--stroke);color:#fff;cursor:pointer}
+  .row{display:flex;gap:10px}
+  .row .field{flex:1}
+  .actions{display:grid;gap:10px;margin-top:12px}
+  .btn{border-radius:12px;padding:12px 14px;border:1px solid var(--stroke);background:#111;color:#fff;cursor:pointer}
+  .btn.primary{background:var(--blue);border-color:transparent}
+  .btn.success{background:var(--green);border-color:transparent}
+  .btn.danger{background:var(--red);border-color:transparent}
+  .btn.ghost{background:rgba(255,255,255,.08)}
+
+  /* NEXT CLASS overlay */
+  .class-wrap{position:fixed;inset:0;display:none;z-index:76}
+  .class-wrap.open{display:block}
+  .class-card{position:absolute;left:50%;top:58px;transform:translateX(-50%);
+    width:min(96vw,980px);background:var(--panel);border:1px solid var(--stroke);
+    border-radius:16px;backdrop-filter:blur(10px);overflow:hidden}
+  .class-header{display:flex;justify-content:space-between;align-items:center;padding:12px;border-bottom:1px solid var(--stroke)}
+  .video-hero{position:relative;background:#000}
+  .video-hero video{display:block;width:100%;height:360px;background:#000}
+  .video-controls{position:absolute;right:10px;bottom:10px;display:flex;gap:8px}
+  .mini-btn{padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.12);border:1px solid var(--stroke)}
+  .class-body{display:grid;gap:10px;padding:12px}
+  .meta{display:flex;flex-wrap:wrap;gap:14px;color:var(--muted)}
+  .enrolled{display:flex;align-items:center;gap:8px}
+  .stack{display:flex}
+  .stack .avatar{width:26px;height:26px;border:2px solid #000;margin-left:-8px}
+  .stack .avatar:first-child{margin-left:0}
+  .people-list{display:none;border-top:1px solid var(--stroke);padding-top:10px}
+  .people-list.open{display:block}
+
+  /* Floating mini-player (draggable) */
+  .pip{position:fixed;right:16px;bottom:16px;width:320px;background:#000;border:1px solid var(--stroke);border-radius:12px;display:none;z-index:77}
+  .pip header{display:flex;justify-content:space-between;align-items:center;padding:6px 8px;background:rgba(255,255,255,.06)}
+  .pip video{width:100%;height:180px;background:#000;display:block}
 </style>
 </head>
 <body>
-  <div class="fullscreen" aria-hidden="true"></div>
+  <div class="bg" aria-hidden="true"></div>
 
-  <!-- Ribbon -->
-  <header class="ribbon">
-    <div class="r-left">
-      <a href="#" class="link active">Home</a>
-      <a href="#" class="link">Classes</a>
-      <a href="#" class="link">Courses</a>
-      <a href="#" class="link">Online Content</a>
-    </div>
-    <div class="r-right" id="r-right"></div>
+  <!-- RIBBON -->
+  <header class="ribbon" role="navigation" aria-label="Primary">
+    <!-- Left nav (evenly spaced with submenus) -->
+    <nav class="nav left" id="nav-left"></nav>
+
+    <div class="brand-gap"></div> <!-- balances grid -->
+
+    <!-- Right side -->
+    <nav class="nav right" id="nav-right"></nav>
   </header>
 
-  <!-- Login Modal -->
-  <div class="modal-backdrop" id="login-modal"><div class="scrim"></div>
-    <div class="card"><h2>Sign in</h2>
-      <div class="field"><label>Email</label><input id="li-user" class="input"></div>
-      <div class="field"><label>Password</label><input id="li-pass" type="password" class="input"></div>
+  <!-- NEXT CLASS overlay -->
+  <div class="class-wrap" id="class-wrap" aria-hidden="true">
+    <div class="veil"></div>
+    <article class="class-card" id="class-card">
+      <div class="class-header">
+        <div><strong>Foundations of Drawing</strong> · Sun 14 Sep · 6:00–7:30pm · Runtime 90m</div>
+        <button class="mini-btn" id="class-close">Close</button>
+      </div>
+      <div class="video-hero">
+        <video id="class-video" controls playsinline preload="metadata"
+               poster="assets/hero-jody.jpg"></video>
+        <div class="video-controls">
+          <button class="mini-btn" id="to-pip">Minimise</button>
+          <button class="mini-btn" id="to-full">Full screen</button>
+        </div>
+      </div>
+      <div class="class-body">
+        <div class="meta">
+          <span>Type: <strong>Workshop</strong></span>
+          <span>Location: <strong>Online</strong></span>
+          <span>Teacher: <strong>Jody</strong></span>
+        </div>
+        <div class="enrolled">
+          <span>Enrolled:</span>
+          <div class="stack" id="enrolled-stack"></div>
+          <button class="mini-btn" id="see-people">See all</button>
+        </div>
+        <div class="people-list" id="people-list"></div>
+      </div>
+    </article>
+  </div>
+
+  <!-- Floating mini-player -->
+  <div class="pip" id="pip">
+    <header id="pip-drag"><span>Now Playing: Foundations of Drawing</span>
+      <div style="display:flex;gap:6px">
+        <button class="mini-btn" id="pip-close">Close</button>
+        <button class="mini-btn" id="pip-back">Back to card</button>
+      </div>
+    </header>
+    <video id="pip-video" controls playsinline></video>
+  </div>
+
+  <!-- AUTH / PROFILE MODALS -->
+  <div class="backdrop" id="login-modal"><div class="veil"></div>
+    <div class="card">
+      <h2>Sign in</h2>
+      <div class="field"><label class="label" for="li-user">Email</label>
+        <input id="li-user" class="input" autocomplete="username"></div>
+      <div class="field"><label class="label" for="li-pass">Password</label>
+        <div class="inputwrap">
+          <input id="li-pass" class="input" type="password" autocomplete="current-password">
+          <button class="showpass" type="button" data-for="li-pass">👁</button>
+        </div>
+      </div>
       <div class="actions"><button class="btn success" id="li-submit">Sign in</button><button class="btn ghost" id="li-cancel">Cancel</button></div>
     </div>
   </div>
 
-  <!-- Signup Modal -->
-  <div class="modal-backdrop" id="signup-modal"><div class="scrim"></div>
-    <div class="card"><h2>Create account</h2>
-      <div class="field"><label>Name</label><input id="su-name" class="input"></div>
-      <div class="field"><label>Email</label><input id="su-email" class="input"></div>
-      <div class="field"><label>Password</label><input id="su-pass" type="password" class="input"></div>
+  <div class="backdrop" id="signup-modal"><div class="veil"></div>
+    <div class="card">
+      <h2>Create account</h2>
+      <div class="row">
+        <div class="field"><label class="label" for="su-first">First name</label><input id="su-first" class="input"></div>
+        <div class="field"><label class="label" for="su-last">Surname</label><input id="su-last" class="input"></div>
+      </div>
+      <div class="field"><label class="label" for="su-email">Email</label><input id="su-email" type="email" class="input"></div>
+      <div class="field"><label class="label" for="su-phone">Phone</label><input id="su-phone" type="tel" class="input"></div>
+      <div class="field"><label class="label" for="su-pass">Password</label>
+        <div class="inputwrap"><input id="su-pass" type="password" class="input"><button class="showpass" type="button" data-for="su-pass">👁</button></div></div>
+      <div class="field"><label class="label" for="su-confirm">Confirm password</label>
+        <div class="inputwrap"><input id="su-confirm" type="password" class="input"><button class="showpass" type="button" data-for="su-confirm">👁</button></div></div>
       <div class="actions"><button class="btn primary" id="su-submit">Sign up</button><button class="btn ghost" id="su-cancel">Cancel</button></div>
     </div>
   </div>
 
-  <!-- Logout Modal -->
-  <div class="modal-backdrop" id="logout-modal"><div class="scrim"></div>
-    <div class="card center"><h2>Log out?</h2><div class="actions"><button class="btn danger" id="lo-yes">Yes</button><button class="btn ghost" id="lo-no">No</button></div></div>
+  <div class="backdrop" id="profile-modal"><div class="veil"></div>
+    <div class="card">
+      <h2>Your profile</h2>
+      <div class="field"><label class="label" for="pr-name">Name</label><input id="pr-name" class="input"></div>
+      <div class="field"><label class="label" for="pr-email">Email</label><input id="pr-email" class="input"></div>
+      <div class="field"><label class="label" for="avatar-upload">Avatar image</label><input id="avatar-upload" type="file" accept="image/*" class="input"></div>
+      <div class="actions"><button class="btn ghost" id="pr-cancel">Cancel</button><button class="btn success" id="pr-save">Save</button></div>
+    </div>
   </div>
 
-  <!-- Profile Modal -->
-  <div class="modal-backdrop" id="profile-modal"><div class="scrim"></div>
-    <div class="card"><h2>Your profile</h2>
-      <div class="field"><label>Name</label><input id="pr-name" class="input"></div>
-      <div class="field"><label>Email</label><input id="pr-email" class="input"></div>
-      <div class="field"><label>Avatar</label><input type="file" id="avatar-upload" accept="image/*" class="input"></div>
-      <div class="actions"><button class="btn ghost" id="pr-close">Close</button></div>
+  <div class="backdrop" id="logout-modal"><div class="veil"></div>
+    <div class="card center">
+      <h2>Log out?</h2>
+      <div class="actions"><button class="btn danger" id="lo-yes">Yes, log out</button><button class="btn ghost" id="lo-no">No</button></div>
     </div>
   </div>
 
 <script>
-  // Auth + profile storage
-  const isLoggedIn = () => sessionStorage.getItem('AUTH')==='1';
-  const setLoggedIn = v => sessionStorage.setItem('AUTH', v?'1':'0');
-  const getUser = () => JSON.parse(localStorage.getItem('USER')||'{}');
-  const setUser = obj => localStorage.setItem('USER', JSON.stringify(obj));
+/* ======= State ======= */
+const isLoggedIn = () => sessionStorage.getItem('AUTH')==='1';
+const setLoggedIn = v => sessionStorage.setItem('AUTH', v?'1':'0');
+const getUser = () => JSON.parse(localStorage.getItem('USER')||'{}');
+const setUser = u => localStorage.setItem('USER', JSON.stringify(u));
 
-  const right = document.getElementById('r-right');
+/* ======= Ribbon build ======= */
+const left = document.getElementById('nav-left');
+const right = document.getElementById('nav-right');
 
-  function renderRight(){
-    right.innerHTML='';
-    if(isLoggedIn()){
-      const u=getUser();
-      const wrap=document.createElement('div'); wrap.className='avatar-wrap';
-      const btn=document.createElement('button'); btn.className='avatar-btn';
-      const circle=document.createElement('div'); circle.className='avatar-circle';
-      if(u.avatar){ const img=document.createElement('img'); img.src=u.avatar; circle.appendChild(img);}
-      else circle.textContent=(u.name?.[0]||'?').toUpperCase();
-      const label=document.createElement('span'); label.className='avatar-label'; label.textContent=u.name||'Profile';
-      btn.append(circle,label); wrap.appendChild(btn);
+function buildLeftNav(){
+  left.innerHTML = '';
+  const items = ['Home','Courses','Classes','Online Content','Prices'];
+  items.forEach((label, idx)=>{
+    const it = document.createElement('div'); it.className='nav-item';
+    const a = document.createElement('a'); a.href='#'; a.className='link'+(idx===0?' active':''); a.textContent=label;
+    it.appendChild(a);
+    const sm = document.createElement('div'); sm.className='submenu';
+    sm.innerHTML = `<a href="#">Placeholder 1</a><a href="#">Placeholder 2</a><a href="#">Placeholder 3</a>`;
+    it.appendChild(sm); left.appendChild(it);
+    a.addEventListener('click', (e)=>{ e.preventDefault();
+      const open = it.classList.contains('open');
+      document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('open'));
+      it.classList.toggle('open', !open);
+    });
+  });
+  document.addEventListener('click', e=>{
+    if(!e.target.closest('.nav-item')) document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('open'));
+  });
+}
 
-      const pop=document.createElement('div'); pop.className='account-pop';
-      pop.innerHTML=`
-        <div class="item" data-action="profile">Profile</div>
-        <div class="item" data-action="subscription">Subscription <span class="hint">${u.subLevel||'Free'}</span></div>
-        <div class="item" data-action="training">Enrolled training</div>
-        <div class="item red" data-action="logout">Log out</div>
-      `;
-      wrap.appendChild(pop); right.appendChild(wrap);
+function svg(pathD){
+  const s = document.createElementNS('http://www.w3.org/2000/svg','svg');
+  s.setAttribute('viewBox','0 0 24 24'); s.classList.add('icon');
+  const p = document.createElementNS('http://www.w3.org/2000/svg','path'); p.setAttribute('d', pathD);
+  s.appendChild(p); return s;
+}
 
-      btn.addEventListener('click',e=>{ e.stopPropagation(); pop.classList.toggle('open'); });
-      document.addEventListener('click',e=>{ if(!e.target.closest('.account-pop') && !e.target.closest('.avatar-btn')) pop.classList.remove('open'); });
-      pop.addEventListener('click',e=>{
-        const act=e.target.closest('.item')?.dataset.action;
-        if(!act)return; pop.classList.remove('open');
-        if(act==='profile') openModal('profile-modal');
-        if(act==='logout') openModal('logout-modal');
-      });
-    }else{
-      const login=document.createElement('a'); login.className='pill green'; login.textContent='Login';
-      login.onclick=()=>openModal('login-modal');
-      const signup=document.createElement('a'); signup.className='pill blue'; signup.textContent='Sign up';
-      signup.onclick=()=>openModal('signup-modal');
-      right.append(login,signup);
-    }
+function buildRightNav(){
+  right.innerHTML='';
+  if(!isLoggedIn()){
+    const login = Object.assign(document.createElement('a'),{className:'pill green',textContent:'Login'});
+    const signup= Object.assign(document.createElement('a'),{className:'pill blue',textContent:'Sign up'});
+    login.onclick=()=> openModal('login-modal');
+    signup.onclick=()=> openModal('signup-modal');
+    right.append(login,signup);
+    return;
   }
+  // Notifications
+  const bell = Object.assign(document.createElement('button'),{className:'iconbtn',title:'Notifications'});
+  bell.appendChild(svg('M12 22a2 2 0 0 0 2-2H10a2 2 0 0 0 2 2zm6-6V11a6 6 0 1 0-12 0v5l-2 2v1h16v-1l-2-2z'));
+  bell.onclick=()=> alert('Notifications placeholder');
 
-  function openModal(id){ document.getElementById(id).classList.add('open'); }
-  function closeModal(id){ document.getElementById(id).classList.remove('open'); }
-  function closeAll(){ ['login-modal','signup-modal','logout-modal','profile-modal'].forEach(closeModal); }
-  document.querySelectorAll('.scrim').forEach(s=>s.onclick=closeAll);
+  // Next class
+  const next = Object.assign(document.createElement('button'),{className:'iconbtn',title:'Next class'});
+  next.appendChild(svg('M8 7V3h8v4m5 4H3m2 10h14a2 2 0 0 0 2-2V7H3v12a2 2 0 0 0 2 2z'));
+  next.onclick=()=> openClass();
 
-  // Login / signup
-  liSubmit=document.getElementById('li-submit');
-  liSubmit.onclick=()=>{ setLoggedIn(true); setUser({name:'User'}); closeModal('login-modal'); renderRight(); }
-  document.getElementById('li-cancel').onclick=()=>closeModal('login-modal');
-  document.getElementById('su-submit').onclick=()=>{ setLoggedIn(true); setUser({name:document.getElementById('su-name').value||'User'}); closeModal('signup-modal'); renderRight(); }
-  document.getElementById('su-cancel').onclick=()=>closeModal('signup-modal');
+  // Avatar chip
+  const wrap = Object.assign(document.createElement('div'),{style:'position:relative'});
+  const chip = Object.assign(document.createElement('button'),{className:'chip',type:'button'});
+  const av = Object.assign(document.createElement('div'),{className:'avatar'});
+  const u = getUser();
+  if(u.avatar){ const img=new Image(); img.src=u.avatar; av.appendChild(img); } else { av.textContent=(u.name?.[0]||'?').toUpperCase(); }
+  const nm = Object.assign(document.createElement('span'),{className:'name',textContent:u.name||'Profile'});
+  chip.append(av,nm);
+  const pop = Object.assign(document.createElement('div'),{className:'account-pop'});
+  pop.innerHTML = `
+    <div class="item" data-act="profile">Profile</div>
+    <div class="item" data-act="subscription">Subscription <span class="hint">${u.subLevel||'Free'}</span></div>
+    <div class="item" data-act="training">Enrolled training</div>
+    <div class="item red" data-act="logout">Log out</div>`;
+  wrap.append(chip,pop);
 
-  // Logout
-  document.getElementById('lo-yes').onclick=()=>{ setLoggedIn(false); setUser({}); closeModal('logout-modal'); renderRight(); }
-  document.getElementById('lo-no').onclick=()=>closeModal('logout-modal');
+  chip.onclick=(e)=>{ e.stopPropagation(); pop.classList.toggle('open'); };
+  document.addEventListener('click',e=>{ if(!e.target.closest('.account-pop') && !e.target.closest('.chip')) pop.classList.remove('open'); });
+  pop.onclick=(e)=>{
+    const act=e.target.closest('.item')?.dataset.act; if(!act) return; pop.classList.remove('open');
+    if(act==='profile') openProfile();
+    if(act==='subscription') openSub();
+    if(act==='training') alert('Training placeholder');
+    if(act==='logout') openModal('logout-modal');
+  };
 
-  // Profile
-  document.getElementById('pr-close').onclick=()=>{ const u=getUser(); u.name=document.getElementById('pr-name').value||u.name; u.email=document.getElementById('pr-email').value||u.email; setUser(u); closeModal('profile-modal'); renderRight(); }
-  document.getElementById('avatar-upload').onchange=e=>{ const f=e.target.files[0]; if(f){ const r=new FileReader(); r.onload=ev=>{ const u=getUser(); u.avatar=ev.target.result; setUser(u); renderRight(); }; r.readAsDataURL(f);} }
+  right.append(bell,next,wrap);
+}
 
-  renderRight();
+/* ======= Modal helpers ======= */
+function openModal(id){ const el=document.getElementById(id); el.classList.add('open'); el.setAttribute('aria-hidden','false'); }
+function closeModal(id){ const el=document.getElementById(id); el.classList.remove('open'); el.setAttribute('aria-hidden','true'); }
+function closeAll(){ ['login-modal','signup-modal','profile-modal','logout-modal'].forEach(closeModal); }
+document.querySelectorAll('.backdrop .veil').forEach(v=> v.addEventListener('click', closeAll));
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ closeAll(); closeClass(); }});
+
+/* Show/hide password buttons */
+document.querySelectorAll('.showpass').forEach(btn=>{
+  btn.addEventListener('click', ()=>{
+    const id = btn.getAttribute('data-for'); const input = document.getElementById(id);
+    input.type = input.type === 'password' ? 'text' : 'password';
+  });
+});
+
+/* ======= Auth click-through ======= */
+document.getElementById('li-submit').onclick=()=>{
+  setLoggedIn(true);
+  const email = document.getElementById('li-user').value||'user@example.com';
+  const name = email.split('@')[0];
+  const u = getUser();
+  setUser({ ...u, name: u.name || name.charAt(0).toUpperCase()+name.slice(1), email, subLevel: u.subLevel || 'Free' });
+  closeModal('login-modal'); buildRightNav();
+};
+document.getElementById('li-cancel').onclick=()=> closeModal('login-modal');
+
+document.getElementById('su-submit').onclick=()=>{
+  const first=document.getElementById('su-first').value||'New';
+  const last=document.getElementById('su-last').value||'User';
+  const email=document.getElementById('su-email').value||'user@example.com';
+  setLoggedIn(true); setUser({name:`${first} ${last}`.trim(), email, subLevel:'Free'});
+  closeModal('signup-modal'); buildRightNav();
+};
+document.getElementById('su-cancel').onclick=()=> closeModal('signup-modal');
+
+document.getElementById('lo-yes').onclick=()=>{ setLoggedIn(false); setUser({}); closeModal('logout-modal'); buildRightNav(); };
+document.getElementById('lo-no').onclick=()=> closeModal('logout-modal');
+
+/* ======= Profile ======= */
+function openProfile(){
+  const u=getUser();
+  document.getElementById('pr-name').value = u.name||'';
+  document.getElementById('pr-email').value= u.email||'';
+  openModal('profile-modal');
+}
+document.getElementById('pr-save').onclick=()=>{
+  const u=getUser();
+  u.name=document.getElementById('pr-name').value||u.name||'User';
+  u.email=document.getElementById('pr-email').value||u.email||'';
+  setUser(u); closeModal('profile-modal'); buildRightNav();
+};
+document.getElementById('pr-cancel').onclick=()=> closeModal('profile-modal');
+document.getElementById('avatar-upload').addEventListener('change', e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader(); r.onload=ev=>{ const u=getUser(); u.avatar=ev.target.result; setUser(u); buildRightNav(); };
+  r.readAsDataURL(f);
+});
+
+/* ======= Next Class (card + mini-player) ======= */
+const classWrap=document.getElementById('class-wrap');
+const hero=document.getElementById('class-video');
+const pip=document.getElementById('pip');
+const pipVid=document.getElementById('pip-video');
+document.getElementById('class-close').onclick=()=> closeClass();
+document.getElementById('to-full').onclick=()=> hero.requestFullscreen?.();
+document.getElementById('to-pip').onclick=()=> openPip();
+document.getElementById('pip-close').onclick=()=> pip.style.display='none';
+document.getElementById('pip-back').onclick=()=>{ pip.style.display='none'; classWrap.classList.add('open'); };
+
+function openClass(){ classWrap.classList.add('open'); }
+function closeClass(){ classWrap.classList.remove('open'); }
+function openPip(){ pipVid.src=''; pipVid.removeAttribute('src'); pip.style.display='block'; classWrap.classList.remove('open'); }
+/* Draggable PiP */
+(function(){
+  const handle=document.getElementById('pip-drag');
+  let ox=0, oy=0, drag=false;
+  handle.addEventListener('mousedown',e=>{ drag=true; ox=e.clientX-pip.offsetLeft; oy=e.clientY-pip.offsetTop; e.preventDefault();});
+  window.addEventListener('mousemove',e=>{ if(!drag) return; pip.style.left=(e.clientX-ox)+'px'; pip.style.top=(e.clientY-oy)+'px'; pip.style.right='auto'; pip.style.bottom='auto';});
+  window.addEventListener('mouseup',()=> drag=false);
+})();
+/* Enrolled avatars (demo) */
+const stack=document.getElementById('enrolled-stack');
+const list=document.getElementById('people-list');
+const demoPeople=['Alex','Ben','Casey','Dana','Eli','Fran','Gus'].map(n=>({name:n}));
+function renderPeople(){
+  stack.innerHTML=''; list.innerHTML='';
+  demoPeople.forEach(p=>{
+    const a=document.createElement('div'); a.className='avatar'; a.textContent=p.name[0]; stack.appendChild(a);
+    const row=document.createElement('div'); row.style.padding='6px 0'; row.textContent=p.name; list.appendChild(row);
+  });
+}
+renderPeople();
+document.getElementById('see-people').onclick=()=> list.classList.toggle('open');
+
+/* ======= Subscriptions ======= */
+function openSub(){ openModal('sub-modal'); document.getElementById('sub-level').textContent=getUser().subLevel||'Free'; }
+document.querySelectorAll('#signup-modal .showpass, #login-modal .showpass').forEach(()=>{});
+document.querySelectorAll('#sub-modal [data-level]').forEach(b=> b.addEventListener('click',()=>{
+  const level=b.getAttribute('data-level'); const u=getUser(); u.subLevel=level; setUser(u);
+  document.getElementById('sub-level').textContent=level;
+  document.getElementById('hint-sub')?.textContent=level;
+}));
+
+/* ======= Init ======= */
+buildLeftNav();
+buildRightNav();
 </script>
 </body>
 </html>
