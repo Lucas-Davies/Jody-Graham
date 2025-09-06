@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en-AU">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Jody Graham — Homepage</title>
+<meta name="color-scheme" content="dark"> <!-- Force dark mode -->
+<style>
+  html, body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    overflow: hidden;          /* no scrolling */
+    background: #000;          /* dark fallback */
+    color-scheme: dark;        /* browsers render UI (inputs, scrollbars) dark */
+  }
+  body {
+    background: #000;          /* make sure it stays dark */
+  }
+  .fullscreen {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    background: url("assets/hero-jody.jpg") no-repeat center center;
+    background-size: cover;    /* crop to fill */
+    background-color: #000;    /* if image takes a moment to load */
+  }
+</style>
+</head>
+<body>
+  <div class="fullscreen"></div>
+</body>
+</html>
