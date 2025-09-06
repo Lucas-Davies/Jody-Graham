@@ -1,0 +1,121 @@
+:root{
+  color-scheme: dark;
+  --ink:#fff; --muted:#b8c0cc; --stroke:rgba(255,255,255,.18);
+  --panel:rgba(0,0,0,.72); --veil:rgba(0,0,0,.45);
+  --blue:#0A84FF; --green:#32D74B; --red:#FF453A;
+}
+
+html,body{
+  margin:0; height:100%; overflow:hidden; background:#000; color:var(--ink);
+  font:16px/1.45 -apple-system,BlinkMacSystemFont,Segoe UI,Roboto,system-ui,sans-serif;
+}
+
+/* Fullscreen background */
+.bg{position:fixed; inset:0; background:url("hero-jody.jpg") center/cover no-repeat #000;}
+
+/* Ribbon */
+.ribbon{
+  position:fixed; top:0; left:0; right:0; height:56px; z-index:40;
+  background:rgba(0,0,0,.30); backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--stroke);
+  display:grid; align-items:center; grid-template-columns:1fr auto 1fr;
+  padding:0 12px;
+}
+.brand-gap{justify-self:center;}
+.nav{display:flex; gap:22px; justify-content:space-evenly; align-items:center;}
+.nav.right{justify-content:flex-end; gap:16px}
+.nav a,.nav button{appearance:none; border:0; background:none; color:#fff; text-decoration:none; cursor:pointer}
+.nav .link{white-space:nowrap; opacity:.95}
+.nav .link.active{color:var(--blue); font-weight:600}
+
+/* Submenus */
+.nav-item{position:relative}
+.submenu{
+  position:absolute; top:100%; left:0; min-width:200px; display:none; z-index:55;
+  background:var(--panel); backdrop-filter:blur(10px);
+  border:1px solid var(--stroke); border-radius:12px; padding:8px;
+}
+.submenu a{display:block; padding:8px 10px; border-radius:8px; color:#fff; text-decoration:none}
+.submenu a:hover{background:rgba(255,255,255,.08)}
+.nav-item.open>.submenu{display:block}
+@media (hover:hover){ .nav-item:hover>.submenu{display:block} }
+
+/* Pills (logged-out right side) */
+.pill{padding:8px 12px; border-radius:999px; background:rgba(255,255,255,.08); border:1px solid var(--stroke)}
+.pill.green{background:rgba(50,215,75,.20)}
+.pill.blue{background:rgba(10,132,255,.20)}
+
+/* iOS-like avatar chip (no outline) */
+.chip{display:flex; align-items:center; gap:8px; padding:6px 10px; border-radius:999px;
+  background:rgba(255,255,255,.10); backdrop-filter:blur(6px)}
+.avatar{width:28px; height:28px; border-radius:50%; overflow:hidden; display:grid; place-items:center; background:rgba(255,255,255,.15); font-weight:700}
+.avatar img{width:100%; height:100%; object-fit:cover; display:block}
+.name{font-weight:600; color:var(--blue); white-space:nowrap}
+
+/* Small icon button */
+.iconbtn{width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,.08);
+  border:1px solid var(--stroke); display:grid; place-items:center}
+.icon{width:18px; height:18px; display:block; fill:#fff; opacity:.95}
+
+/* Popover under avatar */
+.account-pop{position:absolute; top:44px; right:0; min-width:240px; display:none; z-index:60;
+  background:var(--panel); border:1px solid var(--stroke); border-radius:14px; padding:8px}
+.account-pop.open{display:block}
+.account-pop .item{padding:10px 12px; border-radius:10px; cursor:pointer}
+.account-pop .item:hover{background:rgba(255,255,255,.08)}
+.account-pop .item.red{background:rgba(255,69,58,.18)}
+.account-pop .hint{float:right; opacity:.8; font-size:.85em}
+
+/* Modal base */
+.backdrop{position:fixed; inset:0; display:none; z-index:70}
+.backdrop.open{display:block}
+.veil{position:absolute; inset:0; background:var(--veil)}
+.card{
+  position:absolute; left:50%; top:50%; transform:translate(-50%,-50%);
+  width:min(92vw,440px); background:rgba(0,0,0,.30); border:1px solid var(--stroke);
+  border-radius:16px; backdrop-filter:blur(10px); padding:18px
+}
+.card h2{margin:0 0 10px}
+.field{margin:10px 0 12px}
+.label{display:block; font-size:.9rem; color:var(--muted); margin:0 0 6px}
+.inputwrap{position:relative}
+.input{width:100%; padding:12px 44px 12px 12px; border-radius:12px; border:1px solid var(--stroke);
+  background:rgba(0,0,0,.35); color:#fff}
+.showpass{position:absolute; right:6px; top:6px; width:32px; height:32px; border-radius:8px;
+  background:rgba(255,255,255,.08); border:1px solid var(--stroke); color:#fff; cursor:pointer}
+.row{display:flex; gap:10px}
+.row .field{flex:1}
+.actions{display:grid; gap:10px; margin-top:12px}
+.btn{border-radius:12px; padding:12px 14px; border:1px solid var(--stroke); background:#111; color:#fff; cursor:pointer}
+.btn.primary{background:var(--blue); border-color:transparent}
+.btn.success{background:var(--green); border-color:transparent}
+.btn.danger{background:var(--red); border-color:transparent}
+.btn.ghost{background:rgba(255,255,255,.08)}
+.center{text-align:center}
+
+/* NEXT CLASS overlay */
+.class-wrap{position:fixed; inset:0; display:none; z-index:76}
+.class-wrap.open{display:block}
+.class-card{
+  position:absolute; left:50%; top:58px; transform:translateX(-50%);
+  width:min(96vw,980px); background:var(--panel); border:1px solid var(--stroke);
+  border-radius:16px; backdrop-filter:blur(10px); overflow:hidden
+}
+.class-header{display:flex; justify-content:space-between; align-items:center; padding:12px; border-bottom:1px solid var(--stroke)}
+.video-hero{position:relative; background:#000}
+.video-hero video{display:block; width:100%; height:360px; background:#000}
+.video-controls{position:absolute; right:10px; bottom:10px; display:flex; gap:8px}
+.mini-btn{padding:8px 10px; border-radius:10px; background:rgba(255,255,255,.12); border:1px solid var(--stroke)}
+.class-body{display:grid; gap:10px; padding:12px}
+.meta{display:flex; flex-wrap:wrap; gap:14px; color:var(--muted)}
+.enrolled{display:flex; align-items:center; gap:8px}
+.stack{display:flex}
+.stack .avatar{width:26px; height:26px; border:2px solid #000; margin-left:-8px}
+.stack .avatar:first-child{margin-left:0}
+.people-list{display:none; border-top:1px solid var(--stroke); padding-top:10px}
+.people-list.open{display:block}
+
+/* Floating mini-player (draggable) */
+.pip{position:fixed; right:16px; bottom:16px; width:320px; background:#000; border:1px solid var(--stroke); border-radius:12px; display:none; z-index:77}
+.pip header{display:flex; justify-content:space-between; align-items:center; padding:6px 8px; background:rgba(255,255,255,.06)}
+.pip video{width:100%; height:180px; background:#000; display:block}
